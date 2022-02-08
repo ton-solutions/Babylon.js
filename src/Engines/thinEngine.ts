@@ -190,14 +190,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@5.0.0-beta.6";
+        return "babylonjs@5.0.0-beta.7";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "5.0.0-beta.6";
+        return "5.0.0-beta.7";
     }
 
     /**
@@ -362,6 +362,14 @@ export class ThinEngine {
     protected _creationOptions: EngineOptions;
     protected _audioContext: Nullable<AudioContext>;
     protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
+
+    /**
+     * Gets the options used for engine creation
+     * @returns EngineOptions object
+     */
+    public getCreationOptions() {
+        return this._creationOptions;
+    }
 
     protected _highPrecisionShadersAllowed = true;
     /** @hidden */
