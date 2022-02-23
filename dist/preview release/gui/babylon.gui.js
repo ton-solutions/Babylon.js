@@ -97,9 +97,9 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ({
 
 /***/ "../../node_modules/tslib/tslib.es6.js":
-/*!************************************************************************************!*\
-  !*** C:/Users/raweber/Documents/GitHub/Babylon.js/node_modules/tslib/tslib.es6.js ***!
-  \************************************************************************************/
+/*!*************************************************************!*\
+  !*** E:/Babylon/Babylon.js/node_modules/tslib/tslib.es6.js ***!
+  \*************************************************************/
 /*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __createBinding, __exportStar, __values, __read, __spread, __spreadArrays, __spreadArray, __await, __asyncGenerator, __asyncDelegator, __asyncValues, __makeTemplateObject, __importStar, __importDefault, __classPrivateFieldGet, __classPrivateFieldSet */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -9065,7 +9065,7 @@ var InputText = /** @class */ (function (_super) {
         this._cursorOffset = 0;
         this._markAsDirty();
         this.onFocusObservable.notifyObservers(this);
-        if (navigator.userAgent.indexOf("Mobile") !== -1 && !this.disableMobilePrompt) {
+        if (this._focusedBy === "touch" && !this.disableMobilePrompt) {
             var value = prompt(this.promptMessage);
             if (value !== null) {
                 this.text = value;
@@ -9678,6 +9678,7 @@ var InputText = /** @class */ (function (_super) {
         this._cursorIndex = -1;
         this._isPointerDown = true;
         this._host._capturingControl[pointerId] = this;
+        this._focusedBy = pi.event.pointerType;
         if (this._host.focusedControl === this) {
             // Move cursor
             clearTimeout(this._blinkTimeout);
@@ -14418,30 +14419,40 @@ var TextBlock = /** @class */ (function (_super) {
         var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
         return { text: line, width: lineWidth };
     };
+    //Calculate how many characters approximately we need to remove
+    TextBlock.prototype._getCharsToRemove = function (lineWidth, width, lineLength) {
+        var diff = lineWidth > width ? lineWidth - width : 0;
+        // This isn't exact unless the font is monospaced
+        var charWidth = lineWidth / lineLength;
+        var removeChars = Math.max(Math.floor(diff / charWidth), 1);
+        return removeChars;
+    };
     TextBlock.prototype._parseLineEllipsis = function (line, width, context) {
         if (line === void 0) { line = ""; }
         var textMetrics = context.measureText(line);
         var lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
-        if (lineWidth > width) {
-            line += "…";
-        }
+        var removeChars = this._getCharsToRemove(lineWidth, width, line.length);
         // unicode support. split('') does not work with unicode!
         // make sure Array.from is available
         var characters = Array.from && Array.from(line);
         if (!characters) {
             // no array.from, use the old method
             while (line.length > 2 && lineWidth > width) {
-                line = line.slice(0, -2) + "…";
-                textMetrics = context.measureText(line);
+                line = line.slice(0, -removeChars);
+                textMetrics = context.measureText(line + "…");
                 lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
+            // Add on the end
+            line += "…";
         }
         else {
             while (characters.length && lineWidth > width) {
-                characters.pop();
-                line = "".concat(characters.join(""), "...");
+                characters.splice(characters.length - removeChars, removeChars);
+                line = "".concat(characters.join(""), "\u2026");
                 textMetrics = context.measureText(line);
                 lineWidth = Math.abs(textMetrics.actualBoundingBoxLeft) + Math.abs(textMetrics.actualBoundingBoxRight);
+                removeChars = this._getCharsToRemove(lineWidth, width, line.length);
             }
         }
         return { text: line, width: lineWidth };

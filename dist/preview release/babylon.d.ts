@@ -7673,6 +7673,11 @@ declare module BABYLON {
     }
 }
 declare module BABYLON {
+    /**
+     * Type used to define a texture size (either with a number or with a rect width and height)
+     * @deprecated please use TextureSize instead
+     */
+    export type RenderTargetTextureSize = TextureSize;
         interface ThinEngine {
             /**
              * Creates a new render target texture
@@ -27434,7 +27439,7 @@ declare module BABYLON {
          * Interpolates a Vector3 linearly
          * @param startValue Start value of the animation curve
          * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
+         * @param gradient Scalar amount to interpolate (value between 0 and 1)
          * @returns Interpolated scalar value
          */
         vector3InterpolateFunction(startValue: Vector3, endValue: Vector3, gradient: number): Vector3;
@@ -27444,7 +27449,7 @@ declare module BABYLON {
          * @param outTangent End tangent of the animation
          * @param endValue End value of the animation curve
          * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
+         * @param gradient Scalar amount to interpolate (value between 0 and 1)
          * @returns InterpolatedVector3 value
          */
         vector3InterpolateFunctionWithTangents(startValue: Vector3, outTangent: Vector3, endValue: Vector3, inTangent: Vector3, gradient: number): Vector3;
@@ -27452,7 +27457,7 @@ declare module BABYLON {
          * Interpolates a Vector2 linearly
          * @param startValue Start value of the animation curve
          * @param endValue End value of the animation curve
-         * @param gradient Scalar amount to interpolate
+         * @param gradient Scalar amount to interpolate (value between 0 and 1)
          * @returns Interpolated Vector2 value
          */
         vector2InterpolateFunction(startValue: Vector2, endValue: Vector2, gradient: number): Vector2;
@@ -27462,7 +27467,7 @@ declare module BABYLON {
          * @param outTangent End tangent of the animation
          * @param endValue End value of the animation curve
          * @param inTangent Start tangent of the animation curve
-         * @param gradient Scalar amount to interpolate
+         * @param gradient Scalar amount to interpolate (value between 0 and 1)
          * @returns Interpolated Vector2 value
          */
         vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2;
@@ -37835,10 +37840,8 @@ declare module BABYLON {
         private static _TmpScaling;
         private static _TmpTranslation;
         private _forward;
-        private _forwardInverted;
         private _up;
         private _right;
-        private _rightInverted;
         private _position;
         private _rotation;
         private _rotationQuaternion;
@@ -38734,6 +38737,7 @@ declare module BABYLON {
         private static _LeftHandedForwardReadOnly;
         private static _RightHandedForwardReadOnly;
         private static _RightReadOnly;
+        private static _LeftReadOnly;
         private static _ZeroReadOnly;
         /** @hidden */
         _x: number;
@@ -39231,6 +39235,10 @@ declare module BABYLON {
          * Gets a right Vector3 that must not be updated
          */
         static get RightReadOnly(): DeepImmutable<Vector3>;
+        /**
+         * Gets a left Vector3 that must not be updated
+         */
+        static get LeftReadOnly(): DeepImmutable<Vector3>;
         /**
          * Gets a forward Vector3 that must not be updated
          */
@@ -48433,6 +48441,7 @@ declare module BABYLON {
         private _pointerMoveEvent;
         private _pointerDownEvent;
         private _pointerUpEvent;
+        private _pointerCancelEvent;
         private _pointerWheelEvent;
         private _pointerBlurEvent;
         private _wheelEventName;
@@ -49976,22 +49985,13 @@ declare module BABYLON {
          * this is easier to set here than in all the materials.
          */
         set environmentTexture(value: Nullable<BaseTexture>);
-        /** @hidden */
-        protected _environmentIntensity: number;
         /**
          * Intensity of the environment in all pbr material.
          * This dims or reinforces the IBL lighting overall (reflection and diffuse).
          * As in the majority of the scene they are the same (exception for multi room and so on),
          * this is easier to reference from here than from all the materials.
          */
-        get environmentIntensity(): number;
-        /**
-         * Intensity of the environment in all pbr material.
-         * This dims or reinforces the IBL lighting overall (reflection and diffuse).
-         * As in the majority of the scene they are the same (exception for multi room and so on),
-         * this is easier to set here than in all the materials.
-         */
-        set environmentIntensity(value: number);
+        environmentIntensity: number;
         /** @hidden */
         protected _imageProcessingConfiguration: ImageProcessingConfiguration;
         /**
@@ -66255,6 +66255,8 @@ declare module BABYLON {
         occlusionType: number;
         /** @hidden */
         occlusionQueryAlgorithmType: number;
+        /** @hidden */
+        forceRenderingWhenOccluded: boolean;
     }
         interface Engine {
             /**
@@ -66382,6 +66384,11 @@ declare module BABYLON {
              * @see https://doc.babylonjs.com/features/occlusionquery
              */
             isOcclusionQueryInProgress: boolean;
+            /**
+             * Flag to force rendering the mesh even if occluded
+             * @see https://doc.babylonjs.com/features/occlusionquery
+             */
+            forceRenderingWhenOccluded: boolean;
         }
 }
 declare module BABYLON {
