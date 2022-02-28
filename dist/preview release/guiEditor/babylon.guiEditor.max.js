@@ -47560,6 +47560,8 @@ var ConstraintDirection;
     ConstraintDirection[ConstraintDirection["X"] = 2] = "X";
     ConstraintDirection[ConstraintDirection["Y"] = 3] = "Y";
 })(ConstraintDirection || (ConstraintDirection = {}));
+var ARROW_KEY_MOVEMENT_SMALL = 1; // px
+var ARROW_KEY_MOVEMENT_LARGE = 5; // px
 var WorkbenchComponent = /** @class */ (function (_super) {
     Object(tslib__WEBPACK_IMPORTED_MODULE_0__["__extends"])(WorkbenchComponent, _super);
     function WorkbenchComponent(props) {
@@ -48422,6 +48424,17 @@ var WorkbenchComponent = /** @class */ (function (_super) {
                 case "F":
                     _this.globalState.onFitToWindowObservable.notifyObservers();
                     break;
+                case "ArrowUp": // move up
+                    _this.moveControls(false, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);
+                    break;
+                case "ArrowDown": // move down
+                    _this.moveControls(false, k.event.shiftKey ? ARROW_KEY_MOVEMENT_LARGE : ARROW_KEY_MOVEMENT_SMALL);
+                    break;
+                case "ArrowLeft": // move left
+                    _this.moveControls(true, k.event.shiftKey ? -ARROW_KEY_MOVEMENT_LARGE : -ARROW_KEY_MOVEMENT_SMALL);
+                    break;
+                case "ArrowRight": // move right
+                    _this.moveControls(true, k.event.shiftKey ? ARROW_KEY_MOVEMENT_LARGE : ARROW_KEY_MOVEMENT_SMALL);
                 default:
                     break;
             }
@@ -48456,6 +48469,35 @@ var WorkbenchComponent = /** @class */ (function (_super) {
         this._initialPanningOffset = this.getScaledPointerPosition();
         this.props.globalState.onArtBoardUpdateRequiredObservable.notifyObservers();
         this.props.globalState.onGizmoUpdateRequireObservable.notifyObservers();
+    };
+    // Move the selected controls. Can be either on horizontal (leftInPixels) or 
+    // vertical (topInPixels) direction
+    WorkbenchComponent.prototype.moveControls = function (moveHorizontal, amount) {
+        for (var _i = 0, _a = this.props.globalState.workbench.selectedGuiNodes; _i < _a.length; _i++) {
+            var selectedControl = _a[_i];
+            if (moveHorizontal) { // move horizontal
+                var prevValue = selectedControl.leftInPixels;
+                selectedControl.leftInPixels += amount;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: "leftInPixels",
+                    value: selectedControl.leftInPixels,
+                    initialValue: prevValue
+                });
+                this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            }
+            else { // move vertical
+                var prevValue = selectedControl.topInPixels;
+                selectedControl.topInPixels += amount;
+                this.props.globalState.onPropertyChangedObservable.notifyObservers({
+                    object: selectedControl,
+                    property: "topInPixels",
+                    value: selectedControl.topInPixels,
+                    initialValue: prevValue
+                });
+                this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
+            }
+        }
     };
     //Get the wheel delta
     WorkbenchComponent.prototype.zoomWheel = function (event) {
